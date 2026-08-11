@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MediTrack</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <h1>MediTrack - Patients</h1>
+    <h2>Add New Patient</h2>
+    <form id="patient-form">
+        <input type="text" id="name" placeholder="Name" required>
+        <input type="number" id="age" placeholder="Age" required>
+        <input type="number" id="phone" placeholder="Phone" required>
+        <button type="submit">Add Patient</button>
+    </form>
+
+    <div id="patient-list"></div>
+    <div id="appointment-section" style="display: none;">
+        <h2>Appointments for <span id="selected-patient-name"></span></h2>
+        <div id="appointment-list"></div>
+
+        <h3>Add Appointment</h3>
+        <form id="appointment-form">
+            <input type="text" id="doctorName" placeholder="Doctor Name" required>
+            <input type="date" id="appointmentDate" required>
+            <input type="text" id="reason" placeholder="Reason" required>
+            <select id="status">
+                <option value="SCHEDULED">SCHEDULED</option>
+                <option value="COMPLETED">COMPLETED</option>
+                <option value="CANCELLED">CANCELLED</option>
+            </select>
+            <button type="submit">Add Appointment</button>
+        </form>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
