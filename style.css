@@ -1,0 +1,88 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background-color: #F7FAF9;
+    color: #1F2937;
+    padding: 30px;
+    line-height: 1.6;
+}
+
+h1 {
+    color: #0F766E;
+    margin-bottom: 20px;
+}
+
+h2 {
+    color: #0F766E;
+    margin: 25px 0 15px;
+    font-size: 1.3rem;
+}
+
+h3 {
+    color: #1F2937;
+    margin: 15px 0 10px;
+    font-size: 1.1rem;
+}
+
+input, select {
+    padding: 10px 12px;
+    margin: 5px 5px 5px 0;
+    border: 1px solid #D1D5DB;
+    border-radius: 6px;
+    font-size: 0.95rem;
+}
+
+input:focus, select:focus {
+    outline: none;
+    border-color: #0F766E;
+}
+
+button {
+    background-color: #0F766E;
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    margin: 5px 5px 5px 0;
+    transition: background-color 0.2s;
+}
+
+button:hover {
+    background-color: #0B5A54;
+}
+
+.patient-card {
+    background-color: #FFFFFF;
+    border: 1px solid #E5E7EB;
+    border-radius: 8px;
+    padding: 15px 20px;
+    margin-bottom: 15px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.appointment-card {
+    background-color: #FFFBEB;
+    border-left: 4px solid #F59E0B;
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin-bottom: 10px;
+}
+
+#appointment-section {
+    background-color: #FFFFFF;
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 15px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.appointment-card button {
+    margin-top: 8px;
+}

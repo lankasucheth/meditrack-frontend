@@ -31,10 +31,8 @@ async function loadPatients() {
             patientDiv.innerHTML = `
     <strong>${patient.name}</strong> (Age: ${patient.age})<br>
     Phone: ${patient.phone}<br>
-    <button onclick="deletePatient(${patient.id})">Delete</button>
-    <button onclick="startEdit(${patient.id}, '${patient.name}', ${patient.age}, '${patient.phone}')">Edit</button>
-    <button onclick="viewAppointments(${patient.id}, '${patient.name}')">View Appointments</button>
-    <button onclick="openAddAppointment(${patient.id}, '${patient.name}')">Add Appointment</button>
+    <button onclick="viewAppointments(${patient.id}, '${patient.name}', ${patient.age}, '${patient.phone}')">View Appointments</button>
+    <button onclick="openAddAppointment(${patient.id}, '${patient.name}', ${patient.age}, '${patient.phone}')">Add Appointment</button>
 `;
             container.appendChild(patientDiv);
         });
@@ -107,31 +105,45 @@ document.getElementById("patient-form").addEventListener("submit", async functio
 
 // ---------- APPOINTMENTS ----------
 
-function openAddAppointment(patientId, patientName) {
+function openAddAppointment(patientId, patientName, patientAge, patientPhone) {
+    const section = document.getElementById("appointment-section");
+    const clickedCard = event.target.closest(".patient-card");
+
+    if (currentPatientId === patientId && section.style.display === "block") {
+        section.style.display = "none";
+        currentPatientId = null;
+        return;
+    }
+
     currentPatientId = patientId;
     document.getElementById("selected-patient-name").innerText = patientName;
-
-    const section = document.getElementById("appointment-section");
     section.style.display = "block";
-
-    const clickedCard = event.target.closest(".patient-card");
     clickedCard.insertAdjacentElement("afterend", section);
 
     document.getElementById("appointment-list").innerHTML = "";
     document.getElementById("appointmentDate").min = getTodayLocal();
+    document.getElementById("add-appointment-container").style.display = "block";
+
 }
 
-async function viewAppointments(patientId, patientName) {
+async function viewAppointments(patientId, patientName, patientAge, patientPhone) {
+    const section = document.getElementById("appointment-section");
+    const clickedCard = event.target.closest(".patient-card");
+
+    if (currentPatientId === patientId && section.style.display === "block") {
+        section.style.display = "none";
+        currentPatientId = null;
+        return;
+    }
+
     currentPatientId = patientId;
     document.getElementById("selected-patient-name").innerText = patientName;
-
-    const section = document.getElementById("appointment-section");
     section.style.display = "block";
-
-    const clickedCard = event.target.closest(".patient-card");
     clickedCard.insertAdjacentElement("afterend", section);
 
+    document.getElementById("add-appointment-container").style.display = "none";
     await loadAppointments(patientId);
+
 }
 
 async function loadAppointments(patientId) {
@@ -150,7 +162,20 @@ async function loadAppointments(patientId) {
             apptDiv.innerHTML = `
                 Dr. ${appt.doctorName} — ${appt.appointmentDate}<br>
                 Reason: ${appt.reason} | Status: ${appt.status}<br>
+                <button onclick="toggleInlineEdit(${appt.id})">Edit</button>
                 <button onclick="deleteAppointment(${appt.id})">Delete</button>
+
+                <div id="inline-edit-${appt.id}" style="display:none;">
+                    <input type="text" id="inline-doctor-${appt.id}" value="${appt.doctorName}">
+                    <input type="date" id="inline-date-${appt.id}" value="${appt.appointmentDate}">
+                    <input type="text" id="inline-reason-${appt.id}" value="${appt.reason}">
+                    <select id="inline-status-${appt.id}">
+                        <option value="SCHEDULED" ${appt.status === "SCHEDULED" ? "selected" : ""}>SCHEDULED</option>
+                        <option value="COMPLETED" ${appt.status === "COMPLETED" ? "selected" : ""}>COMPLETED</option>
+                        <option value="CANCELLED" ${appt.status === "CANCELLED" ? "selected" : ""}>CANCELLED</option>
+                    </select>
+                    <button onclick="saveInlineEdit(${appt.id})">Save</button>
+                </div>
             `;
             container.appendChild(apptDiv);
         });
@@ -160,8 +185,45 @@ async function loadAppointments(patientId) {
     }
 }
 
+
+
+function toggleInlineEdit(id) {
+    const form = document.getElementById(`inline-edit-${id}`);
+    form.style.display = (form.style.display === "none") ? "block" : "none";
+}
+
+async function saveInlineEdit(id) {
+    const updatedAppointment = {
+        doctorName: document.getElementById(`inline-doctor-${id}`).value,
+        appointmentDate: document.getElementById(`inline-date-${id}`).value,
+        reason: document.getElementById(`inline-reason-${id}`).value,
+        status: document.getElementById(`inline-status-${id}`).value,
+        patient: {
+            id: currentPatientId
+        }
+    };
+    try {
+        const response = await fetch(`${APPOINTMENT_API_URL}/${id}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(updatedAppointment)
+        });
+        if (!response.ok) {
+            throw new Error("Failed to update appointment");
+        }
+        await loadAppointments(currentPatientId);
+    } catch (error) {
+        console.error("Error updating appointment:", error);
+        alert("Failed to update appointment.");
+    }
+}
+
 document.getElementById("appointment-form").addEventListener("submit", async function (event) {
     event.preventDefault();
+    const form = event.target;
+    const editingId = form.dataset.editingId;
     const newAppointment = {
         doctorName: document.getElementById("doctorName").value,
         appointmentDate: document.getElementById("appointmentDate").value,
@@ -171,22 +233,27 @@ document.getElementById("appointment-form").addEventListener("submit", async fun
             id: currentPatientId
         }
     };
+    const isEditing = !!editingId;
+    const url = isEditing ? `${APPOINTMENT_API_URL}/${editingId}` : APPOINTMENT_API_URL;
+    const method = isEditing ? "PUT" : "POST";
     try {
-        const response = await fetch(APPOINTMENT_API_URL, {
-            method: "POST",
+        const response = await fetch(url, {
+            method: method,
             headers: {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify(newAppointment)
         });
         if (!response.ok) {
-            throw new Error("Failed to add appointment");
+            throw new Error("Failed to save appointment");
         }
-        document.getElementById("appointment-form").reset();
+        form.reset();
+        delete form.dataset.editingId;
+        form.querySelector("button").innerText = "Add Appointment";
         await loadAppointments(currentPatientId);
     } catch (error) {
-        console.error("Error adding appointment:", error);
-        alert("Failed to add appointment.");
+        console.error("Error saving appointment:", error);
+        alert("Failed to save appointment.");
     }
 });
 
