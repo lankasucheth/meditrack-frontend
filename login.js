@@ -15,9 +15,10 @@ document.getElementById("login-form").addEventListener("submit", async function 
             body: JSON.stringify({ username, password })
         });
 
-        const result = await response.text();
-
-        if (result === "SUCCESS") {
+        if (response.ok) {
+            const result = await response.json();
+            sessionStorage.setItem("loggedIn", "true");
+            sessionStorage.setItem("authToken", result.token);
             document.getElementById("login-message").innerText = "Login successful!";
             window.location.href = "index.html";
         } else {
